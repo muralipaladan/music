@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Music Player</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #121212, #2a2a2a);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .player-container {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 30px;
+            width: 320px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .album-art {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            margin: 0 auto 20px auto;
+            background: #1e1e1e;
+            box-shadow: 0 0 25px rgba(0,0,0,0.6);
+            overflow: hidden;
+            animation: spin 12s linear infinite;
+            animation-play-state: paused;
+        }
+        .album-art.playing {
+            animation-play-state: running;
+        }
+        .album-art img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+        .song-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #ffffff;
+        }
+        .artist-name {
+            font-size: 0.9rem;
+            color: #b3b3b3;
+            margin-bottom: 25px;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 25px;
+        }
+        button {
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            color: #1db954; 
+            transform: scale(1.1);
+        }
+        .play-btn {
+            font-size: 3rem;
+            color: #1db954;
+        }
+        .play-btn:hover {
+            color: #1ed760;
+            transform: scale(1.15);
+        }
+        /* Hide default YouTube iframe */
+        #youtube-player {
+            display: none; 
+        }
+    </style>
+    <!-- ഐക്കണുകൾക്കായി FontAwesome ഉപയോഗിക്കുന്നു -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <div class="player-container">
+        <div class="album-art" id="cover">
+            <img src="https://via.placeholder.com/200/1e1e1e/1db954?text=Music" id="thumbnail" alt="Album Art">
+        </div>
+        <div class="song-title" id="title">ലോഡിംഗ്...</div>
+        <div class="artist-name" id="artist">YouTube Music</div>
+        
+        <div class="controls">
+            <button onclick="prevTrack()" title="Previous"><i class="fas fa-step-backward"></i></button>
+            <button class="play-btn" id="play-pause-btn" onclick="togglePlay()" title="Play/Pause"><i class="fas fa-play-circle"></i></button>
+            <button onclick="nextTrack()" title="Next"><i class="fas fa-step-forward"></i></button>
+        </div>
+    </div>
+
+    <!-- YouTube വീഡിയോ ലോഡ് ചെയ്യാനുള്ള മറഞ്ഞിരിക്കുന്ന iframe -->
+    <div id="youtube-player"></div>
+
+    <script>
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        var player;
+        var isPlaying = false;
+        
+        // ചാനൽ പ്ലേലിസ്റ്റ് ഐഡി
+        var playlistId = 'UU8NeSRg0bBs_RnqVxL62B6w';
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('youtube-player', {
+                height: '0',
+                width: '0',
+                playerVars: {
+                    'listType': 'playlist',
+                    'list': playlistId,
+                    'autoplay': 0,
+                    'controls': 0
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange,
+                    'onError': onPlayerError
+                }
+            });
+        }
+
+        function onPlayerReady(event) {
+            document.getElementById('title').innerText = "പ്ലേ ചെയ്യാൻ തയ്യാറാണ്";
+        }
+
+        function onPlayerStateChange(event) {
+            var playPauseBtn = document.getElementById('play-pause-btn');
+            var cover = document.getElementById('cover');
+            
+            if (event.data == YT.PlayerState.PLAYING) {
+                isPlaying = true;
+                playPauseBtn.innerHTML = '<i class="fas fa-pause-circle"></i>';
+                cover.classList.add('playing');
+                updateVideoDetails();
+            } else if (event.data == YT.PlayerState.PAUSED || event.data == YT.PlayerState.ENDED) {
+                isPlaying = false;
+                playPauseBtn.innerHTML = '<i class="fas fa-play-circle"></i>';
+                cover.classList.remove('playing');
+            }
+        }
+
+        function togglePlay() {
+            if (player && typeof player.getPlayerState === 'function') {
+                if (isPlaying) {
+                    player.pauseVideo();
+                } else {
+                    player.playVideo();
+                }
+            }
+        }
+
+        function nextTrack() {
+            if (player) player.nextVideo();
+        }
+
+        function prevTrack() {
+            if (player) player.previousVideo();
+        }
+
+        function updateVideoDetails() {
+            if (player && player.getVideoData) {
+                var data = player.getVideoData();
+                if(data && data.video_id) {
+                    document.getElementById('title').innerText = data.title;
+                    document.getElementById('artist').innerText = data.author;
+                    document.getElementById('thumbnail').src = 'https://img.youtube.com/vi/' + data.video_id + '/hqdefault.jpg';
+                }
+            }
+        }
+
+        function onPlayerError(event) {
+            console.log("Error playing video. Moving to next.");
+            nextTrack();
+        }
+    </script>
+</body>
+</html>
