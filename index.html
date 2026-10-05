@@ -151,7 +151,6 @@
 <body>
 
     <div class="player-wrapper">
-        <!-- പുതിയ പ്ലേലിസ്റ്റ് നൽകാനുള്ള ഭാഗം -->
         <div class="input-section">
             <input type="text" id="playlist-input" placeholder="Playlist ID അല്ലെങ്കിൽ Link നൽകുക...">
             <button onclick="loadNewPlaylist()"><i class="fas fa-plus"></i> Add</button>
@@ -170,9 +169,7 @@
             <button onclick="nextTrack()" title="Next"><i class="fas fa-step-forward"></i></button>
         </div>
 
-        <!-- പാട്ടുകൾ തിരഞ്ഞെടുക്കാനുള്ള ലിസ്റ്റ് -->
         <div class="playlist-container" id="track-list">
-            <!-- പാട്ടുകൾ ഇവിടെ തനിയെ വരും -->
         </div>
     </div>
 
@@ -187,7 +184,6 @@
         var player;
         var isPlaying = false;
         
-        // മുമ്പ് സേവ് ചെയ്ത പ്ലേലിസ്റ്റ് ഉണ്ടോയെന്ന് നോക്കുന്നു, ഇല്ലെങ്കിൽ ഡിഫോൾട്ട് പ്ലേലിസ്റ്റ് എടുക്കുന്നു
         var savedPlaylist = localStorage.getItem('mySavedPlaylist');
         var currentPlaylistId = savedPlaylist ? savedPlaylist : 'UU8NeSRg0bBs_RnqVxL62B6w';
 
@@ -212,6 +208,7 @@
         function onPlayerReady(event) {
             document.getElementById('title').innerText = "പ്ലേ ചെയ്യാൻ തയ്യാറാണ്";
             generateTrackList();
+            setupMediaSession();
         }
 
         function onPlayerStateChange(event) {
@@ -250,12 +247,10 @@
             }
         }
 
-        // പുതിയ പ്ലേലിസ്റ്റ് ആഡ് ചെയ്യാനുള്ള ഫംഗ്ഷൻ
         function loadNewPlaylist() {
             var inputVal = document.getElementById('playlist-input').value.trim();
             if(!inputVal) return;
             
-            // ലിങ്ക് ആണെങ്കിൽ അതിൽ നിന്നും ID വേർതിരിച്ചെടുക്കുന്നു
             var playlistId = inputVal;
             if (inputVal.includes('list=')) {
                 var urlParams = new URLSearchParams(inputVal.split('?')[1]);
@@ -264,18 +259,17 @@
 
             if(playlistId) {
                 currentPlaylistId = playlistId;
-                localStorage.setItem('mySavedPlaylist', currentPlaylistId); // സേവ് ചെയ്യുന്നു
+                localStorage.setItem('mySavedPlaylist', currentPlaylistId); 
                 player.loadPlaylist({
                     'list': currentPlaylistId,
                     'listType': 'playlist',
                     'index': 0
                 });
-                setTimeout(generateTrackList, 2000); // ലിസ്റ്റ് അപ്‌ഡേറ്റ് ചെയ്യാൻ അല്പം സമയം നൽകുന്നു
+                setTimeout(generateTrackList, 2000); 
                 document.getElementById('playlist-input').value = '';
             }
         }
 
-        // പ്ലേലിസ്റ്റിലെ പാട്ടുകളുടെ ലിസ്റ്റ് ഉണ്ടാക്കുന്നു
         function generateTrackList() {
             var trackListContainer = document.getElementById('track-list');
             trackListContainer.innerHTML = '';
@@ -297,7 +291,6 @@
             }
         }
 
-        // നിലവിൽ പ്ലേ ചെയ്യുന്ന പാട്ട് ലിസ്റ്റിൽ ഹൈലൈറ്റ് ചെയ്യുന്നു
         function highlightCurrentTrack() {
             if (player && player.getPlaylistIndex) {
                 var currentIndex = player.getPlaylistIndex();
@@ -317,10 +310,35 @@
             if (player && player.getVideoData) {
                 var data = player.getVideoData();
                 if(data && data.video_id) {
-                    document.getElementById('title').innerText = data.title;
-                    document.getElementById('artist').innerText = data.author;
-                    document.getElementById('thumbnail').src = 'https://img.youtube.com/vi/' + data.video_id + '/hqdefault.jpg';
+                    var titleText = data.title;
+                    var artistText = data.author;
+                    var artUrl = 'https://img.youtube.com/vi/' + data.video_id + '/hqdefault.jpg';
+                    
+                    document.getElementById('title').innerText = titleText;
+                    document.getElementById('artist').innerText = artistText;
+                    document.getElementById('thumbnail').src = artUrl;
+
+                    // Media Session API അപ്ഡേറ്റ് ചെയ്യുന്നു
+                    if ('mediaSession' in navigator) {
+                        navigator.mediaSession.metadata = new MediaMetadata({
+                            title: titleText,
+                            artist: artistText,
+                            album: 'My Playlist',
+                            artwork: [
+                                { src: artUrl, sizes: '512x512', type: 'image/jpeg' }
+                            ]
+                        });
+                    }
                 }
+            }
+        }
+
+        function setupMediaSession() {
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.setActionHandler('play', function() { togglePlay(); });
+                navigator.mediaSession.setActionHandler('pause', function() { togglePlay(); });
+                navigator.mediaSession.setActionHandler('previoustrack', function() { prevTrack(); });
+                navigator.mediaSession.setActionHandler('nexttrack', function() { nextTrack(); });
             }
         }
 
