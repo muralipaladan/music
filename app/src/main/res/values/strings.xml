@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">YouTube Music</string>
+    <string name="playlist_input_placeholder">Playlist ID അല്ലെങ്കിൽ Link നൽകുക...</string>
+    <string name="btn_add">Add</string>
+    <string name="status_loading">പ്ലേലിസ്റ്റ് ലോഡ് ചെയ്യുന്നു...</string>
+    <string name="status_ready">പ്ലേ ചെയ്യാൻ തയ്യാറാണ്</string>
+    <string name="default_artist">YouTube Music</string>
+    <string name="tab_player">പ്ലെയർ (Player)</string>
+    <string name="tab_subjects">വിഭാഗങ്ങൾ (Subjects)</string>
+    <string name="tab_playlist">പാട്ടുകൾ (Songs)</string>
+    <string name="tab_search">തിരയുക (Search)</string>
+    <string name="saved_playlists_title">പ്ലേലിസ്റ്റുകൾ</string>
+    <string name="btn_previous">Previous</string>
+    <string name="btn_play_pause">Play/Pause</string>
+    <string name="btn_next">Next</string>
+    <string name="album_art_desc">Album Art</string>
+    <string name="clear_history">Clear</string>
+    <string name="search_placeholder">ഏതെങ്കിലും പാട്ടോ വിഷയമോ തിരയുക...</string>
+    <string name="search_youtube_btn">യൂട്യൂബിൽ തിരഞ്ഞ് പ്ലേ ചെയ്യുക</string>
+    <string name="channel_name">Music Playback</string>
+    <string name="channel_description">Background music playback notifications</string>
+    <string name="permission_notification_title">നോട്ടിഫിക്കേഷൻ അനുമതി</string>
+    <string name="permission_notification_desc">ബാക്ക്ഗ്രൗണ്ടിൽ പാട്ട് കേൾക്കുമ്പോൾ കൺട്രോൾ ചെയ്യാൻ നോട്ടിഫിക്കേഷൻ അനുവദിക്കുക.</string>
+    <string name="permission_grant">അനുവദിക്കുക</string>
+    <string name="songs_in_playlist">ഈ പ്ലേലിസ്റ്റിലെ പാട്ടുകൾ</string>
+    <string name="now_playing">ഇപ്പോൾ പ്ലേ ചെയ്യുന്നത്</string>
+</resources>

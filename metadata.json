@@ -1,0 +1,6 @@
+{
+  "name": "YouTube Music",
+  "description": "Advanced YouTube Music Player with playlist streaming, album art animations, and Malayalam & English language support.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
