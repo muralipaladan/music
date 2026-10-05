@@ -3,6 +3,7 @@ package com.example.musicplayer.ui.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.musicplayer.data.repository.IndexedSongsDatabase
 import com.example.musicplayer.data.model.LyricLine
 import com.example.musicplayer.data.model.MusicTrack
 import com.example.musicplayer.data.model.SavedPlaylist
@@ -14,17 +15,27 @@ import com.example.musicplayer.data.repository.SubjectPlaylistRepository
 import com.example.musicplayer.player.YouTubePlayerListener
 import com.example.musicplayer.player.YouTubePlayerManager
 import com.example.musicplayer.service.MusicPlaybackService
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 enum class PlayerTab {
     PLAYER,
     SUBJECTS,
     SONGS,
     SEARCH
+}
+
+enum class SongsFilterMode {
+    CURRENT_PLAYLIST,
+    ALL_INDEXED,
+    RECENTLY_PLAYED
 }
 
 data class PlayerUiState(
@@ -37,6 +48,10 @@ data class PlayerUiState(
     val currentPlaylistId: String = PlaylistRepository.DEFAULT_PLAYLIST_ID,
     val currentIndex: Int = 0,
     val tracks: List<MusicTrack> = emptyList(),
+    val indexedSongs: List<MusicTrack> = emptyList(),
+    val recentSongs: List<MusicTrack> = emptyList(),
+    val songsFilterMode: SongsFilterMode = SongsFilterMode.CURRENT_PLAYLIST,
+    val songsLogSearchQuery: String = "",
     val currentTimeSeconds: Float = 0f,
     val durationSeconds: Float = 0f,
     val isReady: Boolean = false,
@@ -46,7 +61,7 @@ data class PlayerUiState(
     val selectedSubjectCategoryId: String? = null,
     val searchQuery: String = "",
     val searchResults: List<SubjectPlaylist> = emptyList(),
-    val trackSearchQuery: String = "" ,
+    val trackSearchQuery: String = "",
     val lyrics: List<LyricLine> = emptyList(),
     val activeLyricIndex: Int = 0,
     val showLyricsPanel: Boolean = false
@@ -57,6 +72,7 @@ class MusicPlayerViewModel(application: Application) : AndroidViewModel(applicat
     private val playlistRepo = PlaylistRepository(application)
     private val subjectRepo = SubjectPlaylistRepository()
     private val lyricsRepo = LyricsRepository()
+    private val indexedDb = IndexedSongsDatabase(application)
     private var playerManager: YouTubePlayerManager? = null
 
     val categories: List<SubjectCategory> = subjectRepo.categories
@@ -72,6 +88,9 @@ class MusicPlayerViewModel(application: Application) : AndroidViewModel(applicat
     val uiState: StateFlow<PlayerUiState> = _uiState.asStateFlow()
 
     init {
+        // Load indexed songs and recently played songs from local memory on startup
+        refreshLibraryFromDatabase()
+
         // Register listener for notification controls
         MusicPlaybackService.playbackActionListener = { action ->
             when (action) {
@@ -90,6 +109,23 @@ class MusicPlayerViewModel(application: Application) : AndroidViewModel(applicat
 
     fun setTab(tab: PlayerTab) {
         _uiState.update { it.copy(currentTab = tab) }
+        if (tab == PlayerTab.SONGS) {
+            refreshLibraryFromDatabase()
+        }
+    }
+
+    fun setSongsFilterMode(mode: SongsFilterMode) {
+        _uiState.update { it.copy(songsFilterMode = mode) }
+    }
+
+    fun updateSongsLogSearchQuery(query: String) {
+        _uiState.update { it.copy(songsLogSearchQuery = query) }
+        if (_uiState.value.songsFilterMode != SongsFilterMode.CURRENT_PLAYLIST) {
+            viewModelScope.launch(Dispatchers.IO) {
+                val filtered = indexedDb.getAllIndexedSongs(query)
+                _uiState.update { it.copy(indexedSongs = filtered) }
+            }
+        }
     }
 
     fun selectSubjectCategory(categoryId: String) {
@@ -182,10 +218,27 @@ class MusicPlayerViewModel(application: Application) : AndroidViewModel(applicat
             val titleToUse = if (title.isNotBlank()) title else _uiState.value.title
             val resolvedLyrics = lyricsRepo.getSyncedLyrics(titleToUse, duration)
 
+            // Save and record in Local Indexed Memory
+            if (videoId.isNotBlank()) {
+                val currentPlId = _uiState.value.currentPlaylistId
+                viewModelScope.launch(Dispatchers.IO) {
+                    indexedDb.recordSongPlayed(videoId, titleToUse, artist)
+                    val updatedTrack = MusicTrack(
+                        index = index,
+                        videoId = videoId,
+                        title = titleToUse,
+                        artist = artist,
+                        durationSeconds = duration
+                    )
+                    indexedDb.insertOrUpdateSong(updatedTrack, currentPlId)
+                    refreshLibraryFromDatabase()
+                }
+            }
+
             _uiState.update { current ->
                 val updatedTracks = if (current.tracks.isNotEmpty()) {
                     current.tracks.mapIndexed { idx, track ->
-                        if (idx == index) {
+                        if (idx == index || (track.videoId.isNotEmpty() && track.videoId == videoId)) {
                             track.copy(
                                 title = if (title.isNotBlank()) title else track.title,
                                 artist = if (artist.isNotBlank()) artist else track.artist,
@@ -222,15 +275,24 @@ class MusicPlayerViewModel(application: Application) : AndroidViewModel(applicat
 
     override fun onPlaylistLoaded(trackVideoIds: List<String>) {
         viewModelScope.launch {
-            val initialTracks = trackVideoIds.mapIndexed { index, vid ->
-                MusicTrack(
-                    index = index,
-                    videoId = vid,
-                    title = "🎵 Track ${index + 1}",
-                    artist = "YouTube Music",
-                    isPlaying = (index == _uiState.value.currentIndex)
-                )
+            // 1. Instant 0ms memory retrieval from Local Indexed DB
+            val initialTracks = withContext(Dispatchers.IO) {
+                trackVideoIds.mapIndexed { index, vid ->
+                    val cached = indexedDb.getCachedSong(vid)
+                    if (cached != null) {
+                        cached.copy(index = index, isPlaying = (index == _uiState.value.currentIndex))
+                    } else {
+                        MusicTrack(
+                            index = index,
+                            videoId = vid,
+                            title = "🎵 Track ${index + 1}",
+                            artist = "YouTube Music",
+                            isPlaying = (index == _uiState.value.currentIndex)
+                        )
+                    }
+                }
             }
+
             _uiState.update {
                 it.copy(
                     tracks = if (initialTracks.isNotEmpty()) initialTracks else it.tracks,
@@ -238,21 +300,41 @@ class MusicPlayerViewModel(application: Application) : AndroidViewModel(applicat
                 )
             }
 
-            // Asynchronously resolve real titles for the tracks
-            trackVideoIds.take(20).forEachIndexed { idx, vid ->
-                launch {
-                    val resolvedTitle = subjectRepo.fetchVideoTitle(vid)
-                    if (resolvedTitle.isNotBlank()) {
+            // 2. High-speed Multi-Chunk Parallel Loading (Async coroutines in chunks of 6)
+            val currentPlId = _uiState.value.currentPlaylistId
+            viewModelScope.launch(Dispatchers.IO) {
+                val uncachedTracks = initialTracks.filter { it.title.startsWith("🎵 Track") }
+
+                // Process in fast parallel chunks
+                uncachedTracks.chunked(6).forEach { chunk ->
+                    val deferredList = chunk.map { track ->
+                        async {
+                            val resolvedTitle = subjectRepo.fetchVideoTitle(track.videoId)
+                            if (resolvedTitle.isNotBlank()) {
+                                val resolvedTrack = track.copy(title = resolvedTitle)
+                                indexedDb.insertOrUpdateSong(resolvedTrack, currentPlId)
+                                resolvedTrack
+                            } else {
+                                null
+                            }
+                        }
+                    }
+
+                    val resolved = deferredList.awaitAll().filterNotNull()
+                    if (resolved.isNotEmpty()) {
+                        val resolvedMap = resolved.associateBy { it.videoId }
                         _uiState.update { current ->
-                            val updated = current.tracks.mapIndexed { i, t ->
-                                if (i == idx && t.title.startsWith("🎵 Track")) {
-                                    t.copy(title = resolvedTitle)
-                                } else t
+                            val updated = current.tracks.map { t ->
+                                resolvedMap[t.videoId] ?: t
                             }
                             current.copy(tracks = updated)
                         }
                     }
                 }
+
+                // Batch save loaded playlist to local database index
+                indexedDb.insertOrUpdateBatch(_uiState.value.tracks, currentPlId)
+                refreshLibraryFromDatabase()
             }
         }
     }
@@ -315,6 +397,28 @@ class MusicPlayerViewModel(application: Application) : AndroidViewModel(applicat
         playerManager?.playTrackAt(index)
     }
 
+    // Direct Instant Selection & Playback from Indexed Songs Log or History
+    fun playSpecificTrack(track: MusicTrack) {
+        val existingIndex = _uiState.value.tracks.indexOfFirst { it.videoId == track.videoId }
+        if (existingIndex >= 0) {
+            playTrack(existingIndex)
+        } else {
+            // Load and play immediately by videoId
+            _uiState.update {
+                it.copy(
+                    title = track.title,
+                    artist = track.artist,
+                    currentVideoId = track.videoId,
+                    thumbnailUrl = track.thumbnailUrl,
+                    isLoading = true,
+                    currentTab = PlayerTab.PLAYER
+                )
+            }
+            playerManager?.playVideoById(track.videoId)
+        }
+        setTab(PlayerTab.PLAYER)
+    }
+
     fun seekTo(seconds: Float) {
         _uiState.update { it.copy(currentTimeSeconds = seconds) }
         playerManager?.seekTo(seconds)
@@ -338,6 +442,19 @@ class MusicPlayerViewModel(application: Application) : AndroidViewModel(applicat
 
     fun selectPreset(playlist: SavedPlaylist) {
         loadNewPlaylist(playlist.id, playlist.title)
+    }
+
+    fun refreshLibraryFromDatabase() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val indexed = indexedDb.getAllIndexedSongs(_uiState.value.songsLogSearchQuery)
+            val recent = indexedDb.getRecentlyPlayed(50)
+            _uiState.update {
+                it.copy(
+                    indexedSongs = indexed,
+                    recentSongs = recent
+                )
+            }
+        }
     }
 
     private fun updateForegroundService() {

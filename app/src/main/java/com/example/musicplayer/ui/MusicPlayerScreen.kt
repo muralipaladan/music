@@ -20,7 +20,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -132,10 +131,16 @@ fun MusicPlayerScreen(
                 }
                 PlayerTab.SONGS -> {
                     SongsTab(
-                        tracks = uiState.tracks,
-                        currentIndex = uiState.currentIndex,
+                        currentPlaylistTracks = uiState.tracks,
+                        indexedSongs = uiState.indexedSongs,
+                        recentSongs = uiState.recentSongs,
+                        filterMode = uiState.songsFilterMode,
+                        searchQuery = uiState.songsLogSearchQuery,
+                        currentVideoId = uiState.currentVideoId,
                         isPlaying = uiState.isPlaying,
-                        onTrackClick = { viewModel.playTrack(it) }
+                        onFilterChange = { viewModel.setSongsFilterMode(it) },
+                        onSearchChange = { viewModel.updateSongsLogSearchQuery(it) },
+                        onTrackClick = { viewModel.playSpecificTrack(it) }
                     )
                 }
                 PlayerTab.SEARCH -> {

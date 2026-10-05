@@ -115,7 +115,6 @@ class YouTubePlayerManager(
                         if (window.AndroidBridge) {
                             window.AndroidBridge.onError(event.data);
                         }
-                        // Try loading next video on error
                         setTimeout(nextVideo, 2000);
                     }
 
@@ -184,6 +183,12 @@ class YouTubePlayerManager(
                     function playTrackAt(idx) {
                         if (player && typeof player.playVideoAt === 'function') {
                             player.playVideoAt(idx);
+                        }
+                    }
+
+                    function loadVideoById(vid) {
+                        if (player && typeof player.loadVideoById === 'function') {
+                            player.loadVideoById(vid);
                         }
                     }
 
@@ -257,6 +262,10 @@ class YouTubePlayerManager(
 
     fun playTrackAt(index: Int) {
         evaluateJs("playTrackAt($index);")
+    }
+
+    fun playVideoById(videoId: String) {
+        evaluateJs("loadVideoById('$videoId');")
     }
 
     fun seekTo(seconds: Float) {
