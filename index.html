@@ -3,37 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Music Player</title>
+    <title>Advanced YouTube Music Player</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #121212, #2a2a2a);
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
             color: white;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
         }
-        .player-container {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(15px);
+        .player-wrapper {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
             border-radius: 20px;
-            padding: 30px;
-            width: 320px;
+            padding: 25px;
+            width: 100%;
+            max-width: 380px;
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-            text-align: center;
             border: 1px solid rgba(255,255,255,0.1);
         }
+        .input-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .input-section input {
+            flex: 1;
+            padding: 10px;
+            border-radius: 10px;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            outline: none;
+        }
+        .input-section input::placeholder {
+            color: #ccc;
+        }
+        .input-section button {
+            background: #1db954;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .input-section button:hover {
+            background: #1ed760;
+        }
         .album-art {
-            width: 200px;
-            height: 200px;
+            width: 180px;
+            height: 180px;
             border-radius: 50%;
             margin: 0 auto 20px auto;
             background: #1e1e1e;
             box-shadow: 0 0 25px rgba(0,0,0,0.6);
             overflow: hidden;
-            animation: spin 12s linear infinite;
+            animation: spin 10s linear infinite;
             animation-play-state: paused;
         }
         .album-art.playing {
@@ -48,26 +79,28 @@
             100% { transform: rotate(360deg); }
         }
         .song-title {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             font-weight: 600;
             margin-bottom: 5px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            color: #ffffff;
+            text-align: center;
         }
         .artist-name {
             font-size: 0.9rem;
             color: #b3b3b3;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
+            text-align: center;
         }
         .controls {
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 25px;
+            margin-bottom: 20px;
         }
-        button {
+        .controls button {
             background: none;
             border: none;
             color: #ffffff;
@@ -75,33 +108,60 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-        button:hover {
+        .controls button:hover {
             color: #1db954; 
             transform: scale(1.1);
         }
         .play-btn {
-            font-size: 3rem;
-            color: #1db954;
+            font-size: 3rem !important;
+            color: #1db954 !important;
         }
-        .play-btn:hover {
-            color: #1ed760;
-            transform: scale(1.15);
+        .playlist-container {
+            max-height: 150px;
+            overflow-y: auto;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            padding: 10px;
         }
-        /* Hide default YouTube iframe */
+        .playlist-container::-webkit-scrollbar {
+            width: 5px;
+        }
+        .playlist-container::-webkit-scrollbar-thumb {
+            background: #1db954;
+            border-radius: 5px;
+        }
+        .track-item {
+            padding: 8px 12px;
+            margin-bottom: 5px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-size: 0.9rem;
+        }
+        .track-item:hover, .track-item.active {
+            background: rgba(29, 185, 84, 0.4);
+        }
         #youtube-player {
             display: none; 
         }
     </style>
-    <!-- ഐക്കണുകൾക്കായി FontAwesome ഉപയോഗിക്കുന്നു -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
-    <div class="player-container">
+    <div class="player-wrapper">
+        <!-- പുതിയ പ്ലേലിസ്റ്റ് നൽകാനുള്ള ഭാഗം -->
+        <div class="input-section">
+            <input type="text" id="playlist-input" placeholder="Playlist ID അല്ലെങ്കിൽ Link നൽകുക...">
+            <button onclick="loadNewPlaylist()"><i class="fas fa-plus"></i> Add</button>
+        </div>
+
         <div class="album-art" id="cover">
             <img src="https://via.placeholder.com/200/1e1e1e/1db954?text=Music" id="thumbnail" alt="Album Art">
         </div>
-        <div class="song-title" id="title">ലോഡിംഗ്...</div>
+        
+        <div class="song-title" id="title">പ്ലേലിസ്റ്റ് ലോഡ് ചെയ്യുന്നു...</div>
         <div class="artist-name" id="artist">YouTube Music</div>
         
         <div class="controls">
@@ -109,9 +169,13 @@
             <button class="play-btn" id="play-pause-btn" onclick="togglePlay()" title="Play/Pause"><i class="fas fa-play-circle"></i></button>
             <button onclick="nextTrack()" title="Next"><i class="fas fa-step-forward"></i></button>
         </div>
+
+        <!-- പാട്ടുകൾ തിരഞ്ഞെടുക്കാനുള്ള ലിസ്റ്റ് -->
+        <div class="playlist-container" id="track-list">
+            <!-- പാട്ടുകൾ ഇവിടെ തനിയെ വരും -->
+        </div>
     </div>
 
-    <!-- YouTube വീഡിയോ ലോഡ് ചെയ്യാനുള്ള മറഞ്ഞിരിക്കുന്ന iframe -->
     <div id="youtube-player"></div>
 
     <script>
@@ -123,8 +187,9 @@
         var player;
         var isPlaying = false;
         
-        // ചാനൽ പ്ലേലിസ്റ്റ് ഐഡി
-        var playlistId = 'UU8NeSRg0bBs_RnqVxL62B6w';
+        // മുമ്പ് സേവ് ചെയ്ത പ്ലേലിസ്റ്റ് ഉണ്ടോയെന്ന് നോക്കുന്നു, ഇല്ലെങ്കിൽ ഡിഫോൾട്ട് പ്ലേലിസ്റ്റ് എടുക്കുന്നു
+        var savedPlaylist = localStorage.getItem('mySavedPlaylist');
+        var currentPlaylistId = savedPlaylist ? savedPlaylist : 'UU8NeSRg0bBs_RnqVxL62B6w';
 
         function onYouTubeIframeAPIReady() {
             player = new YT.Player('youtube-player', {
@@ -132,7 +197,7 @@
                 width: '0',
                 playerVars: {
                     'listType': 'playlist',
-                    'list': playlistId,
+                    'list': currentPlaylistId,
                     'autoplay': 0,
                     'controls': 0
                 },
@@ -146,6 +211,7 @@
 
         function onPlayerReady(event) {
             document.getElementById('title').innerText = "പ്ലേ ചെയ്യാൻ തയ്യാറാണ്";
+            generateTrackList();
         }
 
         function onPlayerStateChange(event) {
@@ -157,6 +223,7 @@
                 playPauseBtn.innerHTML = '<i class="fas fa-pause-circle"></i>';
                 cover.classList.add('playing');
                 updateVideoDetails();
+                highlightCurrentTrack();
             } else if (event.data == YT.PlayerState.PAUSED || event.data == YT.PlayerState.ENDED) {
                 isPlaying = false;
                 playPauseBtn.innerHTML = '<i class="fas fa-play-circle"></i>';
@@ -174,12 +241,76 @@
             }
         }
 
-        function nextTrack() {
-            if (player) player.nextVideo();
+        function nextTrack() { if (player) player.nextVideo(); }
+        function prevTrack() { if (player) player.previousVideo(); }
+
+        function playSpecificTrack(index) {
+            if (player) {
+                player.playVideoAt(index);
+            }
         }
 
-        function prevTrack() {
-            if (player) player.previousVideo();
+        // പുതിയ പ്ലേലിസ്റ്റ് ആഡ് ചെയ്യാനുള്ള ഫംഗ്ഷൻ
+        function loadNewPlaylist() {
+            var inputVal = document.getElementById('playlist-input').value.trim();
+            if(!inputVal) return;
+            
+            // ലിങ്ക് ആണെങ്കിൽ അതിൽ നിന്നും ID വേർതിരിച്ചെടുക്കുന്നു
+            var playlistId = inputVal;
+            if (inputVal.includes('list=')) {
+                var urlParams = new URLSearchParams(inputVal.split('?')[1]);
+                playlistId = urlParams.get('list');
+            }
+
+            if(playlistId) {
+                currentPlaylistId = playlistId;
+                localStorage.setItem('mySavedPlaylist', currentPlaylistId); // സേവ് ചെയ്യുന്നു
+                player.loadPlaylist({
+                    'list': currentPlaylistId,
+                    'listType': 'playlist',
+                    'index': 0
+                });
+                setTimeout(generateTrackList, 2000); // ലിസ്റ്റ് അപ്‌ഡേറ്റ് ചെയ്യാൻ അല്പം സമയം നൽകുന്നു
+                document.getElementById('playlist-input').value = '';
+            }
+        }
+
+        // പ്ലേലിസ്റ്റിലെ പാട്ടുകളുടെ ലിസ്റ്റ് ഉണ്ടാക്കുന്നു
+        function generateTrackList() {
+            var trackListContainer = document.getElementById('track-list');
+            trackListContainer.innerHTML = '';
+            
+            if (player && player.getPlaylist) {
+                var playlistArray = player.getPlaylist();
+                if (playlistArray && playlistArray.length > 0) {
+                    for (var i = 0; i < playlistArray.length; i++) {
+                        var trackDiv = document.createElement('div');
+                        trackDiv.className = 'track-item';
+                        trackDiv.id = 'track-' + i;
+                        trackDiv.innerText = '🎵 Track ' + (i + 1);
+                        trackDiv.onclick = (function(index) {
+                            return function() { playSpecificTrack(index); }
+                        })(i);
+                        trackListContainer.appendChild(trackDiv);
+                    }
+                }
+            }
+        }
+
+        // നിലവിൽ പ്ലേ ചെയ്യുന്ന പാട്ട് ലിസ്റ്റിൽ ഹൈലൈറ്റ് ചെയ്യുന്നു
+        function highlightCurrentTrack() {
+            if (player && player.getPlaylistIndex) {
+                var currentIndex = player.getPlaylistIndex();
+                var allTracks = document.getElementsByClassName('track-item');
+                for(var i=0; i<allTracks.length; i++) {
+                    allTracks[i].classList.remove('active');
+                }
+                var activeTrack = document.getElementById('track-' + currentIndex);
+                if (activeTrack) {
+                    activeTrack.classList.add('active');
+                    activeTrack.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            }
         }
 
         function updateVideoDetails() {
