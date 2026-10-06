@@ -1,5 +1,6 @@
 package com.example.musicplayer.data.repository
 
+import com.example.musicplayer.data.model.MusicTrack
 import com.example.musicplayer.data.model.SubjectCategory
 import com.example.musicplayer.data.model.SubjectPlaylist
 import kotlinx.coroutines.Dispatchers
@@ -22,24 +23,45 @@ class SubjectPlaylistRepository {
                     title = "Malayalam Trending 2024",
                     description = "Chartbusting new Malayalam releases & viral tracks",
                     subjectId = "malayalam_hits",
-                    songCount = 30,
-                    thumbnailUrl = "https://img.youtube.com/vi/a3Ue-LN5B9U/hqdefault.jpg"
+                    songCount = 6,
+                    thumbnailUrl = "https://img.youtube.com/vi/a3Ue-LN5B9U/hqdefault.jpg",
+                    initialTracks = listOf(
+                        MusicTrack(0, "a3Ue-LN5B9U", "Illuminati (Aavesham)", "Sushin Shyam, Dabzee", 185f),
+                        MusicTrack(1, "e12dO-9Y-vY", "Jaada (Aavesham)", "Sushin Shyam, Sreenath Bhasi", 210f),
+                        MusicTrack(2, "bXjO_r9-i2I", "Kuthanthram (Manjummel Boys)", "Sushin Shyam, Vedan", 195f),
+                        MusicTrack(3, "yJg-Y5byMMw", "Darshana (Hridayam)", "Hesham Abdul Wahab, Darshana", 240f),
+                        MusicTrack(4, "kJQP7kiw5Fk", "Aaromal (Minnal Murali)", "Sushin Shyam, Sooraj Santhosh", 220f),
+                        MusicTrack(5, "8Z7xL9w0e2Q", "Pala Palli Thiruppalli (Kaduva)", "Jakes Bejoy, Athul Narukara", 190f)
+                    )
                 ),
                 SubjectPlaylist(
                     id = "RDCLAK5uy_kfdmRP1CPG4g_VbVj9wZ_7g-4Wp5_pB_4",
                     title = "Evergreen Malayalam Favourites",
                     description = "Timeless classics and popular radio hits",
                     subjectId = "malayalam_hits",
-                    songCount = 45,
-                    thumbnailUrl = "https://img.youtube.com/vi/bXjO_r9-i2I/hqdefault.jpg"
+                    songCount = 5,
+                    thumbnailUrl = "https://img.youtube.com/vi/bXjO_r9-i2I/hqdefault.jpg",
+                    initialTracks = listOf(
+                        MusicTrack(0, "yJg-Y5byMMw", "Darshana (Hridayam)", "Hesham Abdul Wahab", 240f),
+                        MusicTrack(1, "w7x2L8k9p3Q", "Malare (Premam)", "Vijay Yesudas, Rajesh Murugesan", 255f),
+                        MusicTrack(2, "2v8y8k_xL8Q", "Aaradhike (Ambili)", "Sooraj Santhosh, Madhuvanthi", 270f),
+                        MusicTrack(3, "3w0e8xL2k8Q", "Uyiril Thodum (Kumbalangi Nights)", "Sooraj Santhosh, Anne Amie", 230f),
+                        MusicTrack(4, "5y9x8L2k1wQ", "Mizhiyil Ninnum (Mayanadhi)", "Shahabaz Aman, Rex Vijayan", 260f)
+                    )
                 ),
                 SubjectPlaylist(
                     id = "PLb2EvW5YmXmE8p6a8xV06N42d997ZkM1y",
-                    title = "Sushin Shyam & New Wave",
+                    title = "Sushin Shyam Musical Waves",
                     description = "Electrifying Malayalam OSTs and background scores",
                     subjectId = "malayalam_hits",
-                    songCount = 28,
-                    thumbnailUrl = "https://img.youtube.com/vi/e12dO-9Y-vY/hqdefault.jpg"
+                    songCount = 4,
+                    thumbnailUrl = "https://img.youtube.com/vi/e12dO-9Y-vY/hqdefault.jpg",
+                    initialTracks = listOf(
+                        MusicTrack(0, "a3Ue-LN5B9U", "Illuminati - Sushin Shyam", "Dabzee, Sushin Shyam", 185f),
+                        MusicTrack(1, "bXjO_r9-i2I", "Kuthanthram - Manjummel Boys", "Sushin Shyam, Vedan", 195f),
+                        MusicTrack(2, "e12dO-9Y-vY", "Jaada - Aavesham OST", "Sushin Shyam", 210f),
+                        MusicTrack(3, "kJQP7kiw5Fk", "Aaromal - Minnal Murali OST", "Sushin Shyam", 220f)
+                    )
                 )
             )
         ),
@@ -54,16 +76,29 @@ class SubjectPlaylistRepository {
                     title = "Soulful Malayalam Romance",
                     description = "Heart-touching romantic melodies and soft tunes",
                     subjectId = "melodies",
-                    songCount = 35,
-                    thumbnailUrl = "https://img.youtube.com/vi/yJg-Y5byMMw/hqdefault.jpg"
+                    songCount = 5,
+                    thumbnailUrl = "https://img.youtube.com/vi/yJg-Y5byMMw/hqdefault.jpg",
+                    initialTracks = listOf(
+                        MusicTrack(0, "yJg-Y5byMMw", "Darshana (Hridayam)", "Hesham Abdul Wahab", 240f),
+                        MusicTrack(1, "2v8y8k_xL8Q", "Aaradhike (Ambili)", "Sooraj Santhosh", 270f),
+                        MusicTrack(2, "3w0e8xL2k8Q", "Uyiril Thodum (Kumbalangi Nights)", "Sooraj Santhosh, Anne Amie", 230f),
+                        MusicTrack(3, "w7x2L8k9p3Q", "Malare Ninne (Premam)", "Vijay Yesudas", 255f),
+                        MusicTrack(4, "5y9x8L2k1wQ", "Mizhiyil Ninnum (Mayanadhi)", "Shahabaz Aman", 260f)
+                    )
                 ),
                 SubjectPlaylist(
                     id = "PL4fGSIndQ80Wj2T3o3sFq37jP07xS3g5q",
                     title = "Rain & Coffee Melodies",
                     description = "Acoustic and soothing songs for gentle evenings",
                     subjectId = "melodies",
-                    songCount = 25,
-                    thumbnailUrl = "https://img.youtube.com/vi/kJQP7kiw5Fk/hqdefault.jpg"
+                    songCount = 4,
+                    thumbnailUrl = "https://img.youtube.com/vi/kJQP7kiw5Fk/hqdefault.jpg",
+                    initialTracks = listOf(
+                        MusicTrack(0, "kJQP7kiw5Fk", "Mazha Paadum (Acoustic)", "Various Artists", 220f),
+                        MusicTrack(1, "yJg-Y5byMMw", "Darshana (Coffee Unplugged)", "Hesham Abdul Wahab", 240f),
+                        MusicTrack(2, "5y9x8L2k1wQ", "Mizhiyil Ninnum (Acoustic Rain)", "Shahabaz Aman", 260f),
+                        MusicTrack(3, "2v8y8k_xL8Q", "Aaradhike (Gentle Breeze)", "Sooraj Santhosh", 270f)
+                    )
                 )
             )
         ),
@@ -78,28 +113,40 @@ class SubjectPlaylistRepository {
                     title = "Ayyappa & Hindu Bhakthi Ganam",
                     description = "Yesudas & Chithra devotional masterpieces",
                     subjectId = "devotional",
-                    songCount = 40,
-                    thumbnailUrl = "https://img.youtube.com/vi/8Z7xL9w0e2Q/hqdefault.jpg"
+                    songCount = 4,
+                    thumbnailUrl = "https://img.youtube.com/vi/8Z7xL9w0e2Q/hqdefault.jpg",
+                    initialTracks = listOf(
+                        MusicTrack(0, "DWcJFNfaw9c", "ഹരിവരാസനം (Harivarasanam)", "K.J. Yesudas", 310f),
+                        MusicTrack(1, "2zToEPpFEN8", "താമരപ്പൂവിൽ വാഴും ദേവീ (Thamarapoovil)", "K.S. Chithra", 290f),
+                        MusicTrack(2, "jfKfPfyJRdk", "സ്വാമി സംഗീതമാലപാനം", "K.J. Yesudas", 280f),
+                        MusicTrack(3, "8Z7xL9w0e2Q", "ശരണമയ്യപ്പാ സ്വാമി ശരണമയ്യപ്പാ", "Madhu Balakrishnan", 275f)
+                    )
                 ),
                 SubjectPlaylist(
                     id = "PL6k9nN3E1c2i0H9r-ChristianDevotional",
                     title = "Christian Devotional Melodies",
                     description = "Peaceful prayer songs and choir hymns",
                     subjectId = "devotional",
-                    songCount = 30,
+                    songCount = 3,
                     thumbnailUrl = "https://img.youtube.com/vi/2v8y8k_xL8Q/hqdefault.jpg",
-                    isSearchQuery = true,
-                    searchQuery = "malayalam christian devotional songs hits"
+                    initialTracks = listOf(
+                        MusicTrack(0, "2v8y8k_xL8Q", "യേശുവേ എൻ രക്ഷകാ", "Christian Choir", 300f),
+                        MusicTrack(1, "3w0e8xL2k8Q", "ദൈവമേ നിൻ സ്നേഹം", "K.J. Yesudas", 290f),
+                        MusicTrack(2, "5y9x8L2k1wQ", "പരിശുദ്ധാത്മാവേ എന്നിൽ നിറയണമേ", "Fr. Shaji Thumpechirayil", 320f)
+                    )
                 ),
                 SubjectPlaylist(
                     id = "PL6k9nN3E1c2i0H9r-MappilaPattu",
                     title = "Mappila Pattu & Islamic Songs",
                     description = "Traditional Malabar Mappila songs and Madh songs",
                     subjectId = "devotional",
-                    songCount = 30,
+                    songCount = 3,
                     thumbnailUrl = "https://img.youtube.com/vi/3w0e8xL2k8Q/hqdefault.jpg",
-                    isSearchQuery = true,
-                    searchQuery = "malayalam mappila songs super hits"
+                    initialTracks = listOf(
+                        MusicTrack(0, "3w0e8xL2k8Q", "മക്കത്തെ പൂഞ്ചോല", "M.S. Baburaj Hits", 260f),
+                        MusicTrack(1, "2L8k9w0x3Q1", "സമയമാം രഥത്തിൽ", "Classic Malabar Harmonies", 280f),
+                        MusicTrack(2, "e12dO-9Y-vY", "മൈലാഞ്ചി മൊഞ്ചുള്ള", "Peevi Brothers", 250f)
+                    )
                 )
             )
         ),
@@ -114,20 +161,14 @@ class SubjectPlaylistRepository {
                     title = "70s, 80s & 90s Golden Melodies",
                     description = "Yesudas, S. Janaki, Chithra, M.G. Sreekumar",
                     subjectId = "old_classics",
-                    songCount = 50,
+                    songCount = 4,
                     thumbnailUrl = "https://img.youtube.com/vi/w7x2L8k9p3Q/hqdefault.jpg",
-                    isSearchQuery = true,
-                    searchQuery = "malayalam old golden hits yesudas chithra"
-                ),
-                SubjectPlaylist(
-                    id = "PL4fGSIndQ80XyZ2_JohnsonMasterHits",
-                    title = "Johnson Master & Baburaj Classics",
-                    description = "Pure nostalgic violin harmonies and evergreen chords",
-                    subjectId = "old_classics",
-                    songCount = 35,
-                    thumbnailUrl = "https://img.youtube.com/vi/5y9x8L2k1wQ/hqdefault.jpg",
-                    isSearchQuery = true,
-                    searchQuery = "johnson master evergreen malayalam hits"
+                    initialTracks = listOf(
+                        MusicTrack(0, "w7x2L8k9p3Q", "മാണിക്യ വീണയുമായെൻ", "K.J. Yesudas", 270f),
+                        MusicTrack(1, "5y9x8L2k1wQ", "പ്രമദവനം വീണ്ടും", "K.J. Yesudas, Raveendran", 310f),
+                        MusicTrack(2, "9x8L2k3w1Q0", "ശ്യാമമേഘമേ നീ യദുകുല", "K.S. Chithra", 290f),
+                        MusicTrack(3, "2L8k9w0x3Q1", "ഉണ്ണീ വാവാവോ പൊന്നുണ്ണീ വാവോ", "K.S. Chithra", 260f)
+                    )
                 )
             )
         ),
@@ -139,23 +180,17 @@ class SubjectPlaylistRepository {
             playlists = listOf(
                 SubjectPlaylist(
                     id = "PL4fGSIndQ80PartyFastMalayalam",
-                    title = "Kerala Festival & Onam Beats",
+                    title = "Kerala Festival & Fast Beats",
                     description = "Fast dance numbers, Shinkari Melam & club mixes",
                     subjectId = "party_dance",
-                    songCount = 30,
+                    songCount = 4,
                     thumbnailUrl = "https://img.youtube.com/vi/9x8L2k3w1Q0/hqdefault.jpg",
-                    isSearchQuery = true,
-                    searchQuery = "malayalam party dance fast songs super hits"
-                ),
-                SubjectPlaylist(
-                    id = "PL4fGSIndQ80FolkNadannaPattu",
-                    title = "Nadanna Pattukal (Folk Songs)",
-                    description = "Authentic Kerala folk rhythms & Kalabhavan Mani hits",
-                    subjectId = "party_dance",
-                    songCount = 25,
-                    thumbnailUrl = "https://img.youtube.com/vi/2L8k9w0x3Q1/hqdefault.jpg",
-                    isSearchQuery = true,
-                    searchQuery = "kalabhavan mani nadan pattukal super hits"
+                    initialTracks = listOf(
+                        MusicTrack(0, "a3Ue-LN5B9U", "Illuminati (Aavesham)", "Sushin Shyam, Dabzee", 185f),
+                        MusicTrack(1, "2L8k9w0x3Q1", "എന്തിന്റെ കണ്ണാ ജിമിക്കി കമ്മൽ", "Shaan Rahman, Vineeth", 205f),
+                        MusicTrack(2, "e12dO-9Y-vY", "കരിങ്കാളിയല്ലേ കരിനീലക്കണ്ണേ", "Kalamandalam Sivan", 230f),
+                        MusicTrack(3, "8Z7xL9w0e2Q", "പാലപ്പള്ളി തിരുപ്പള്ളി", "Jakes Bejoy, Athul Narukara", 190f)
+                    )
                 )
             )
         ),
@@ -170,54 +205,13 @@ class SubjectPlaylistRepository {
                     title = "Lofi Midnight Beats",
                     description = "Lo-Fi hip hop beats to relax/study to",
                     subjectId = "lofi_chill",
-                    songCount = 40,
-                    thumbnailUrl = "https://img.youtube.com/vi/jfKfPfyJRdk/hqdefault.jpg"
-                ),
-                SubjectPlaylist(
-                    id = "PLDISKgcnTR4MalayalamLofiChill",
-                    title = "Malayalam Lofi Slowed & Reverb",
-                    description = "Aesthetic chill versions of popular Malayalam tunes",
-                    subjectId = "lofi_chill",
-                    songCount = 30,
-                    thumbnailUrl = "https://img.youtube.com/vi/e12dO-9Y-vY/hqdefault.jpg",
-                    isSearchQuery = true,
-                    searchQuery = "malayalam lofi chill songs slowed reverb"
-                )
-            )
-        ),
-        SubjectCategory(
-            id = "workout_energy",
-            titleMalayalam = "വർക്കൗട്ട് & എനർജി",
-            titleEnglish = "Workout & Motivation",
-            iconName = "fitness",
-            playlists = listOf(
-                SubjectPlaylist(
-                    id = "PLWorkoutMotivationEnergyBeats",
-                    title = "Gym Workout High Energy Beats",
-                    description = "Intense cardio and bodybuilding motivational tracks",
-                    subjectId = "workout_energy",
-                    songCount = 35,
-                    thumbnailUrl = "https://img.youtube.com/vi/2zToEPpFEN8/hqdefault.jpg",
-                    isSearchQuery = true,
-                    searchQuery = "gym workout music motivational beats"
-                )
-            )
-        ),
-        SubjectCategory(
-            id = "instrumental",
-            titleMalayalam = "ഇൻസ്ട്രുമെന്റൽ & ധ്യാനം",
-            titleEnglish = "Instrumental & Meditation",
-            iconName = "piano",
-            playlists = listOf(
-                SubjectPlaylist(
-                    id = "PLInstrumentalFluteViolinRelax",
-                    title = "Indian Bamboo Flute & Violin Melodies",
-                    description = "Peaceful morning meditation & stress relief",
-                    subjectId = "instrumental",
-                    songCount = 25,
-                    thumbnailUrl = "https://img.youtube.com/vi/DWcJFNfaw9c/hqdefault.jpg",
-                    isSearchQuery = true,
-                    searchQuery = "indian classical flute violin instrumental peaceful"
+                    songCount = 3,
+                    thumbnailUrl = "https://img.youtube.com/vi/jfKfPfyJRdk/hqdefault.jpg",
+                    initialTracks = listOf(
+                        MusicTrack(0, "jfKfPfyJRdk", "Lofi Midnight Study Beats", "Lofi Girl Records", 300f),
+                        MusicTrack(1, "e12dO-9Y-vY", "Malayalam Chill Slowed & Reverb", "Malayalam Lofi Project", 240f),
+                        MusicTrack(2, "yJg-Y5byMMw", "Darshana Lofi Aesthetic Remix", "Lofi Beats India", 260f)
+                    )
                 )
             )
         )
@@ -240,15 +234,15 @@ class SubjectPlaylistRepository {
             }
         }
 
-        // Always add a dynamic YouTube Search Playlist option matching the user's subject query!
+        // Add a dynamic YouTube Search Playlist option matching user query
         results.add(
             SubjectPlaylist(
                 id = "search_$q",
                 title = "യൂട്യൂബിൽ: \"$query\"",
-                description = "YouTube-ൽ ഈ വിഷയത്തിലുള്ള ഏറ്റവും പുതിയ ഗാനങ്ങൾ പ്ലേ ചെയ്യുക",
+                description = "YouTube-ൽ ഈ വിഷയത്തിലുള്ള ഗാനങ്ങൾ പ്ലേ ചെയ്യുക",
                 subjectId = "custom_search",
-                songCount = 50,
-                thumbnailUrl = "https://via.placeholder.com/200/1e1e1e/1db954?text=${query.take(5)}",
+                songCount = 10,
+                thumbnailUrl = "https://img.youtube.com/vi/a3Ue-LN5B9U/hqdefault.jpg",
                 isSearchQuery = true,
                 searchQuery = query
             )

@@ -87,11 +87,13 @@ fun MusicPlayerScreen(
                 factory = { ctx ->
                     val webView = playerManager.initialize(uiState.currentPlaylistId)
                     FrameLayout(ctx).apply {
-                        layoutParams = ViewGroup.LayoutParams(1, 1)
+                        layoutParams = ViewGroup.LayoutParams(320, 240)
                         if (webView.parent == null) addView(webView)
                     }
                 },
-                modifier = Modifier.size(1.dp).testTag("youtube_engine_webview")
+                modifier = Modifier
+                    .size(2.dp)
+                    .testTag("youtube_engine_webview")
             )
 
             when (uiState.currentTab) {

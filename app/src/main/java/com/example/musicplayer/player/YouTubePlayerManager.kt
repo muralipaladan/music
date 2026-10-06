@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.os.Handler
 import android.os.Looper
 import android.view.View
+import android.webkit.RenderProcessGoneDetail
 import android.webkit.WebChromeClient
 import android.webkit.WebSettings
 import android.webkit.WebView
@@ -18,9 +19,11 @@ class YouTubePlayerManager(
     private var webView: WebView? = null
     private val mainHandler = Handler(Looper.getMainLooper())
     private var isInitialized = false
+    private var lastPlaylistId: String = ""
 
     @SuppressLint("SetJavaScriptEnabled")
     fun initialize(initialPlaylistId: String): WebView {
+        lastPlaylistId = initialPlaylistId
         if (webView != null) return webView!!
 
         val view = WebView(context.applicationContext).apply {
@@ -29,14 +32,28 @@ class YouTubePlayerManager(
             settings.apply {
                 javaScriptEnabled = true
                 domStorageEnabled = true
+                databaseEnabled = true
                 mediaPlaybackRequiresUserGesture = false
                 cacheMode = WebSettings.LOAD_DEFAULT
+                mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
                 userAgentString = "Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36"
             }
             webChromeClient = WebChromeClient()
             webViewClient = object : WebViewClient() {
                 override fun onPageFinished(view: WebView?, url: String?) {
                     super.onPageFinished(view, url)
+                }
+
+                override fun onRenderProcessGone(view: WebView?, detail: RenderProcessGoneDetail?): Boolean {
+                    try {
+                        view?.destroy()
+                    } catch (_: Exception) {}
+                    webView = null
+                    isInitialized = false
+                    mainHandler.postDelayed({
+                        initialize(lastPlaylistId)
+                    }, 1000)
+                    return true
                 }
             }
             addJavascriptInterface(YouTubeBridge(listener), "AndroidBridge")
@@ -70,6 +87,7 @@ class YouTubePlayerManager(
                     var player;
                     var currentPlaylistId = '$playlistId';
                     var isReady = false;
+                    var pendingVideoId = null;
 
                     function onYouTubeIframeAPIReady() {
                         player = new YT.Player('player', {
@@ -79,7 +97,7 @@ class YouTubePlayerManager(
                                 'listType': 'playlist',
                                 'list': currentPlaylistId,
                                 'autoplay': 1,
-                                'controls': 1,
+                                'controls': 0,
                                 'playsinline': 1,
                                 'rel': 0,
                                 'enablejsapi': 1,
@@ -98,7 +116,16 @@ class YouTubePlayerManager(
                         if (window.AndroidBridge) {
                             window.AndroidBridge.onReady();
                         }
-                        setTimeout(fetchTracks, 1500);
+                        if (pendingVideoId) {
+                            loadVideoById(pendingVideoId);
+                            pendingVideoId = null;
+                        } else {
+                            if (player && typeof player.playVideo === 'function') {
+                                player.playVideo();
+                            }
+                        }
+                        setTimeout(fetchTracks, 1000);
+                        setTimeout(fetchTracks, 3000);
                     }
 
                     function onPlayerStateChange(event) {
@@ -115,7 +142,7 @@ class YouTubePlayerManager(
                         if (window.AndroidBridge) {
                             window.AndroidBridge.onError(event.data);
                         }
-                        setTimeout(nextVideo, 2000);
+                        setTimeout(nextVideo, 1500);
                     }
 
                     function updateVideoDetails() {
@@ -187,8 +214,18 @@ class YouTubePlayerManager(
                     }
 
                     function loadVideoById(vid) {
-                        if (player && typeof player.loadVideoById === 'function') {
-                            player.loadVideoById(vid);
+                        if (player && isReady) {
+                            try {
+                                if (typeof player.loadVideoById === 'function') {
+                                    player.loadVideoById(vid);
+                                    player.playVideo();
+                                } else if (typeof player.cueVideoById === 'function') {
+                                    player.cueVideoById(vid);
+                                    player.playVideo();
+                                }
+                            } catch(e) {}
+                        } else {
+                            pendingVideoId = vid;
                         }
                     }
 
@@ -206,7 +243,7 @@ class YouTubePlayerManager(
                                 'listType': 'playlist',
                                 'index': 0
                             });
-                            setTimeout(fetchTracks, 2000);
+                            setTimeout(fetchTracks, 1500);
                         }
                     }
 
@@ -217,7 +254,7 @@ class YouTubePlayerManager(
                                 'listType': 'search',
                                 'index': 0
                             });
-                            setTimeout(fetchTracks, 2000);
+                            setTimeout(fetchTracks, 1500);
                         }
                     }
 
@@ -265,7 +302,8 @@ class YouTubePlayerManager(
     }
 
     fun playVideoById(videoId: String) {
-        evaluateJs("loadVideoById('$videoId');")
+        val safeId = videoId.replace("'", "\\'").replace("\"", "\\\"")
+        evaluateJs("loadVideoById('$safeId');")
     }
 
     fun seekTo(seconds: Float) {
@@ -273,6 +311,7 @@ class YouTubePlayerManager(
     }
 
     fun loadPlaylist(playlistId: String) {
+        lastPlaylistId = playlistId
         evaluateJs("loadNewPlaylist('$playlistId');")
     }
 

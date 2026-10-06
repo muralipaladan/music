@@ -8,7 +8,8 @@ data class SubjectPlaylist(
     val songCount: Int = 25,
     val thumbnailUrl: String = "",
     val isSearchQuery: Boolean = false,
-    val searchQuery: String = ""
+    val searchQuery: String = "",
+    val initialTracks: List<MusicTrack> = emptyList()
 )
 
 data class SubjectCategory(
